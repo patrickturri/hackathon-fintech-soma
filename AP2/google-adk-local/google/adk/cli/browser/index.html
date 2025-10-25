@@ -1190,34 +1190,18 @@
       visibility: hidden !important;
     }
 
-    /* Modern textarea styling */
-    textarea,
-    textarea[placeholder*="Message"] {
-      border: 1px solid rgba(255, 255, 255, 0.15) !important;
-      border-radius: 12px !important;
-      background: rgba(255, 255, 255, 0.05) !important;
-      padding: 14px 18px !important;
-      transition: all 0.3s ease !important;
-    }
-
-    textarea:hover {
-      border-color: rgba(255, 255, 255, 0.25) !important;
-      background: rgba(255, 255, 255, 0.08) !important;
-    }
-
-    textarea:focus {
-      border-color: rgba(138, 180, 248, 0.6) !important;
-      background: rgba(255, 255, 255, 0.1) !important;
-      outline: none !important;
-      box-shadow: 0 0 0 3px rgba(138, 180, 248, 0.1) !important;
-    }
-
-    /* Modern input container styling */
+    /* Hide outer container borders and styling */
     .mat-mdc-form-field,
     .mdc-text-field,
-    .mat-mdc-form-field .mat-mdc-text-field-wrapper {
-      border-radius: 12px !important;
-      background: rgba(255, 255, 255, 0.05) !important;
+    .mat-mdc-form-field .mat-mdc-text-field-wrapper,
+    .mat-mdc-text-field-wrapper,
+    form,
+    .message-input-container,
+    .chat-input-container {
+      border: none !important;
+      background: transparent !important;
+      padding: 0 !important;
+      margin: 0 !important;
     }
 
     /* Override Material Design outlined borders */
@@ -1226,6 +1210,49 @@
     .mdc-notched-outline__notch,
     .mdc-notched-outline__trailing {
       border: none !important;
+      opacity: 0 !important;
+    }
+
+    /* Modern textarea styling - single clean input */
+    textarea,
+    textarea[placeholder*="Message"],
+    .mat-mdc-form-field textarea,
+    .mdc-text-field__input {
+      border: 1px solid rgba(138, 180, 248, 0.3) !important;
+      border-radius: 16px !important;
+      background: linear-gradient(135deg, rgba(30, 30, 35, 0.95), rgba(25, 25, 30, 0.98)) !important;
+      padding: 16px 20px !important;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+      font-size: 15px !important;
+      line-height: 1.5 !important;
+      color: rgba(255, 255, 255, 0.95) !important;
+      box-shadow:
+        0 4px 12px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+    }
+
+    textarea::placeholder {
+      color: rgba(255, 255, 255, 0.4) !important;
+    }
+
+    textarea:hover {
+      border-color: rgba(138, 180, 248, 0.5) !important;
+      background: linear-gradient(135deg, rgba(35, 35, 40, 0.95), rgba(30, 30, 35, 0.98)) !important;
+      box-shadow:
+        0 6px 16px rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+      transform: translateY(-1px) !important;
+    }
+
+    textarea:focus {
+      border-color: rgba(138, 180, 248, 0.8) !important;
+      background: linear-gradient(135deg, rgba(35, 35, 42, 0.95), rgba(30, 30, 38, 0.98)) !important;
+      outline: none !important;
+      box-shadow:
+        0 8px 24px rgba(138, 180, 248, 0.15),
+        0 0 0 4px rgba(138, 180, 248, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+      transform: translateY(-2px) !important;
     }
   </style>
   <script>
