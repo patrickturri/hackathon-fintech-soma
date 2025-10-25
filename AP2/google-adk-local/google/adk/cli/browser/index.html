@@ -1174,6 +1174,48 @@
       display: none !important
     }
   </style>
+  <style>
+    /* Hide all icon buttons in the message input area */
+    .mat-mdc-icon-button,
+    button[mat-icon-button],
+    .message-input-container button,
+    .chat-input-container button,
+    [class*="input"] button,
+    button.mdc-icon-button,
+    button[type="button"],
+    form button,
+    .mdc-button--icon,
+    .mat-icon-button {
+      display: none !important;
+      visibility: hidden !important;
+    }
+
+    /* Remove white border from input containers */
+    .message-input-container,
+    .chat-input-container,
+    [class*="input-container"],
+    textarea[placeholder*="Message"],
+    textarea,
+    form,
+    .mat-mdc-form-field,
+    .mdc-text-field,
+    .mat-mdc-form-field .mat-mdc-text-field-wrapper,
+    .mdc-text-field--outlined {
+      border: none !important;
+      border-color: transparent !important;
+      outline: none !important;
+    }
+
+    /* Target Material Design outlined inputs specifically */
+    .mat-mdc-form-field-infix,
+    .mdc-notched-outline,
+    .mdc-notched-outline__leading,
+    .mdc-notched-outline__notch,
+    .mdc-notched-outline__trailing {
+      border: none !important;
+      border-color: transparent !important;
+    }
+  </style>
   <script>
     // Auto-redirect to shopping_agent if no app is selected
     (function () {
