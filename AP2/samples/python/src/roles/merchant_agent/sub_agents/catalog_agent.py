@@ -129,7 +129,7 @@ async def _create_and_add_cart_mandate_artifact(
       user_cart_confirmation_required=True,
       payment_request=payment_request,
       cart_expiry=(current_time + timedelta(minutes=30)).isoformat(),
-      merchant_name="Requiem Merchant",
+      merchant_name="Limitless AI Merchant",
   )
 
   cart_mandate = CartMandate(contents=cart_contents)
