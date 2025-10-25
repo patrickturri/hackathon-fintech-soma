@@ -75,23 +75,17 @@ shopper = RetryingLlmAgent(
 
       After the breakdown, leave a blank line and end with: "Shall I proceed?"
     5. Once the user confirms, use the 'find_products' tool. It will
-      return a list of `CartMandate` objects.
-    6. For each CartMandate object in the list, create a visually distinct entry
-      that includes the following details from the object:
-          Item: Display the item_name clearly and in bold.
-          Price: Present the total_price with the currency. Format the price
-            with commas, and use the currency symbol (e.g., "$1,234.56").
-          Expires: Convert the cart_expiry into a human-readable format
-            (e.g., "in 2 hours," "by tomorrow at 5 PM").
-          Refund Period: Convert the refund_period into a human-readable format
-            (e.g., "30 days," "14 days").
-      Present these details to the user in a clear way. If there are more than
-      one CartMandate object, present them as a numbered list.
-      At the bottom, present Sold by: Show the merchant_name
-      associate the first Transaction.
-      Ensure the cart you think matches the user's intent the most is presented
-      at the top of the list. Add a 2-3 line summary of why you recommended the
-      first option to the user.
+      return a formatted string with product details including images.
+    6. The find_products tool returns a nicely formatted Markdown string with
+      product images, descriptions, prices, and links. Simply present this
+      output directly to the user - it's already formatted and ready to display.
+      The formatting includes:
+        - Product images (if available from Best Buy)
+        - Product descriptions
+        - Prices with currency
+        - Merchant name (Best Buy)
+        - Links to view on merchant website
+        - Cart IDs for selection
     7. Ask the user which item they would like to purchase.
     8. After they choose, call the update_chosen_cart_mandate tool with the
       appropriate cart ID.
