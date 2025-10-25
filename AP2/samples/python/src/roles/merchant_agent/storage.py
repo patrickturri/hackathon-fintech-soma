@@ -12,14 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""In-memory storage for CartMandates.
+"""In-memory storage for CartMandates and product metadata.
 
 A CartMandate may be updated multiple times during the course of a shopping
 journey. This storage system is used to persist CartMandates between
 interactions between the shopper and merchant agents.
 """
 
-from typing import Optional
+from typing import Any, Optional
 
 from ap2.types.mandate import CartMandate
 
@@ -34,6 +34,16 @@ def set_cart_mandate(cart_id: str, cart_mandate: CartMandate) -> None:
   _store[cart_id] = cart_mandate
 
 
+def set_cart_metadata(cart_id: str, metadata: dict[str, Any]) -> None:
+  """Set product metadata for a cart (description, image, url, etc.)."""
+  _metadata_store[cart_id] = metadata
+
+
+def get_cart_metadata(cart_id: str) -> Optional[dict[str, Any]]:
+  """Get product metadata for a cart."""
+  return _metadata_store.get(cart_id)
+
+
 def set_risk_data(context_id: str, risk_data: str) -> None:
   """Set risk data by context ID."""
   _store[context_id] = risk_data
@@ -45,3 +55,4 @@ def get_risk_data(context_id: str) -> Optional[str]:
 
 
 _store = {}
+_metadata_store = {}
