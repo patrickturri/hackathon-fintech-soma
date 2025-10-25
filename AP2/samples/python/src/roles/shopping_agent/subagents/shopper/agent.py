@@ -33,7 +33,7 @@ shopper = RetryingLlmAgent(
     model="gemini-2.5-flash",
     name="shopper",
     max_retries=5,
-    instruction="""
+    instruction=("""
     You are an agent responsible for helping the user shop for products.
 
     %s
@@ -50,7 +50,9 @@ shopper = RetryingLlmAgent(
       For example, inquire about:
         - A detailed description of the item.
         - Any preferred merchants or specific SKUs.
-        - Whether the item needs to be refundable.
+"""
+    # - Whether the item needs to be refundable.
+"""
     3. After you have gathered what you believe is sufficient information,
       use the 'create_intent_mandate' tool with the collected information
       (user's description, and any other details they provided). Do not include
@@ -58,8 +60,7 @@ shopper = RetryingLlmAgent(
       the price as a filter when recommending products for the user to select
       from.
     4. Present the IntentMandate to the user in a clear, well-formatted summary.
-      Start with the statement: "Please confirm the following details for your
-      purchase. Note that this information will be shared with the merchant."
+      Start with the statement: "Note that this information has been shared with the merchant."
       And then has a row space and a breakdown of the details:
         Item Description: The natural_language_description. Never include any
           user guidance on price in the intent mandate.
@@ -69,11 +70,29 @@ shopper = RetryingLlmAgent(
         'Any' if not specified.
         SKUs: A comma-separated list of SKUs, or
         'Any' if not specified.
-        Refundable: 'Yes' or 'No'.
+        Refundable: 'Yes' or 'No'. (assume No for now)
         Expires: Convert the intent_expiry timestamp into a
         human-readable relative time (e.g., "in 1 hour", "in 2 days").
 
-      After the breakdown, leave a blank line and end with: "Shall I proceed?"
+      After the breakdown, proceed with step 5. without asking for confirmation.
+"""
+    # 4. Present the IntentMandate to the user in a clear, well-formatted summary.
+    #   Start with the statement: "Please confirm the following details for your
+    #   purchase. Note that this information will be shared with the merchant."
+    #   And then has a row space and a breakdown of the details:
+    #     Item Description: The natural_language_description. Never include any
+    #       user guidance on price in the intent mandate.
+    #     User Confirmation Required: A human-readable version of
+    #     user_cart_confirmation_required (e.g., 'Yes', 'No').
+    #     Merchants: A comma-separated list of merchants, or
+    #     'Any' if not specified.
+    #     SKUs: A comma-separated list of SKUs, or
+    #     'Any' if not specified.
+    #     Refundable: 'Yes' or 'No'. (assume No for now)
+    #     Expires: Convert the intent_expiry timestamp into a
+    #     human-readable relative time (e.g., "in 1 hour", "in 2 days").
+    #   After the breakdown, leave a blank line and end with: "Shall I proceed?"
+"""
     5. Once the user confirms, use the 'find_products' tool. It will
       return a formatted string with product details including images.
     6. The find_products tool returns a nicely formatted Markdown string with
@@ -92,7 +111,8 @@ shopper = RetryingLlmAgent(
     9. Monitor the tool's output. If the cart ID is not found, you must inform
       the user and prompt them to try again. If the selection is successful,
       signal a successful update and hand off the process to the root_agent.
-    """ % DEBUG_MODE_INSTRUCTIONS,
+    """)
+    % DEBUG_MODE_INSTRUCTIONS,
     tools=[
         tools.create_intent_mandate,
         tools.find_products,
