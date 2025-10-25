@@ -59,6 +59,9 @@ class BestBuyClient:
         "smart_home": "pcmcat1496256099917",  # Smart Home
         "wearables": "pcmcat332000050000",  # Wearable Technology
         "coffee_makers": "pcmcat367400050001",  # Coffee Makers
+        "cables": "abcat0515023",  # Cables & Connectors
+        "accessories": "pcmcat748300593083",  # Computer Accessories
+        "chargers": "abcat0515031",  # Chargers & Adapters
     }
 
     def __init__(self, api_key: str | None = None):
@@ -72,6 +75,62 @@ class BestBuyClient:
         self.demo_mode = self.api_key is None
         self.client = httpx.AsyncClient(timeout=10.0)
         self.llm_client = None  # Lazy initialize for category detection
+
+    async def _estimate_price_range(self, query: str) -> tuple[float, float | None]:
+        """Use LLM to estimate reasonable price range for product type.
+
+        Args:
+            query: Natural language search query
+
+        Returns:
+            Tuple of (min_price, max_price). max_price can be None for unlimited.
+        """
+        if self.llm_client is None:
+            self.llm_client = genai.Client()
+
+        prompt = f"""Estimate the typical price range for: "{query}"
+
+Consider these price ranges:
+- Cables/adapters/small accessories: $5-$50
+- Small electronics (chargers, mice, keyboards): $10-$100
+- Medium electronics (headphones, tablets, small appliances): $50-$500
+- Large electronics (laptops, TVs, refrigerators): $200-$3000
+
+Return JSON with min and max price as numbers (no $ symbol).
+If max should be unlimited, use null.
+
+Example responses:
+{{"min": 5, "max": 50}} for cables
+{{"min": 50, "max": 300}} for headphones
+{{"min": 500, "max": null}} for high-end products"""
+
+        try:
+            response = self.llm_client.models.generate_content(
+                model="gemini-2.5-flash",
+                contents=prompt,
+                config={
+                    "response_mime_type": "application/json",
+                    "response_schema": {
+                        "type": "object",
+                        "properties": {
+                            "min": {"type": "number"},
+                            "max": {"type": ["number", "null"]}
+                        },
+                        "required": ["min", "max"]
+                    }
+                }
+            )
+
+            result = response.parsed
+            min_price = float(result.get("min", 0))
+            max_price = float(result["max"]) if result.get("max") is not None else None
+
+            print(f"[Price Estimation] Query: '{query}' → Range: ${min_price}-${max_price or 'unlimited'}")
+            return (min_price, max_price)
+
+        except Exception as e:
+            print(f"[Price Estimation] Error: {e}, using default range")
+            return (0, None)  # Failsafe: no price filter
 
     async def _detect_category(self, query: str) -> str | None:
         """Use LLM to detect the best product category for a search query.
@@ -102,32 +161,36 @@ class BestBuyClient:
             ("smart_home", "Smart home devices"),
             ("wearables", "Wearable technology like smartwatches"),
             ("coffee_makers", "Coffee makers and espresso machines"),
+            ("cables", "Cables and connectors"),
+            ("accessories", "Computer accessories"),
+            ("chargers", "Chargers and power adapters"),
         ]])
 
-        prompt = f"""Given this product search query: "{query}"
+        prompt = f"""Given product search: "{query}"
 
-Select the MOST SPECIFIC category that matches the user's intent from these options:
-
+Select the BEST category from these options:
 {category_list}
 
-Rules:
-1. Choose the MOST SPECIFIC category (e.g., "desktops" instead of "computers" if they want a desktop)
-2. If the query mentions "laptop", choose "laptops"
-3. If the query mentions "desktop" or "tower", choose "desktops"
-4. If the query is generic like "computer for work", choose "computers" (broader category)
-5. Return ONLY the category key (e.g., "desktops"), not the description
-6. If none match well, return "none"
+RULES:
+1. Return ONLY the category key (one word like "laptops" or "cables")
+2. Choose most specific match (e.g., "cables" for "USB cables", not "accessories")
+3. If user wants cables/adapters/chargers, use those specific categories
+4. If no good match exists, return: none
+5. DO NOT explain, DO NOT add formatting, JUST ONE WORD
 
-Return only the category key as a single word.
-"""
+Category:"""
 
         try:
             response = self.llm_client.models.generate_content(
                 model="gemini-2.5-flash",
                 contents=prompt,
+                config={
+                    "response_mime_type": "application/json",
+                    "response_schema": {"type": "string"}
+                }
             )
 
-            category_key = response.text.strip().lower()
+            category_key = response.parsed.strip().lower()
             print(f"[Category Detection] Query: '{query}' → Category: '{category_key}'")
 
             if category_key in self.CATEGORY_MAP:
@@ -166,6 +229,15 @@ Return only the category key as a single word.
         # Detect category for better search results
         category_id = await self._detect_category(query)
 
+        # Estimate price range if not provided
+        if min_price is None or max_price is None:
+            estimated_min, estimated_max = await self._estimate_price_range(query)
+            effective_min_price = min_price if min_price is not None else estimated_min
+            effective_max_price = max_price if max_price is not None else estimated_max
+        else:
+            effective_min_price = min_price
+            effective_max_price = max_price
+
         # Build search criteria
         search_criteria = [f'search={query}']
 
@@ -177,12 +249,14 @@ Return only the category key as a single word.
         # Filter out service/warranty products (type=hardgood excludes warranties)
         search_criteria.append('type=hardgood')
 
-        # Set minimum price based on query type or user preference
-        effective_min_price = min_price if min_price is not None else 50
-        search_criteria.append(f'salePrice>={effective_min_price}')
+        # Apply price filters
+        if effective_min_price > 0:
+            search_criteria.append(f'salePrice>={effective_min_price}')
+            print(f"[BestBuy API] Min price filter: ${effective_min_price}")
 
-        if max_price is not None:
-            search_criteria.append(f'salePrice<={max_price}')
+        if effective_max_price is not None:
+            search_criteria.append(f'salePrice<={effective_max_price}')
+            print(f"[BestBuy API] Max price filter: ${effective_max_price}")
 
         # Join criteria with &
         criteria = '&'.join(search_criteria)

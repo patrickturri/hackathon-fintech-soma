@@ -128,6 +128,22 @@ async def find_items_workflow(
     await bestbuy_client.close()
 
 
+def _extract_keywords(intent: str) -> list[str]:
+  """Extract key search terms from query.
+
+  Args:
+    intent: User's search query
+
+  Returns:
+    List of important keywords
+  """
+  # Remove common stopwords
+  stopwords = {"the", "a", "an", "for", "with", "my", "best", "good", "cheap", "find", "show", "me"}
+  words = intent.lower().split()
+  keywords = [w for w in words if w not in stopwords and len(w) > 2]
+  return keywords
+
+
 async def _filter_relevant_products(
     products: list[BestBuyProduct],
     intent: str,
@@ -148,6 +164,10 @@ async def _filter_relevant_products(
 
   llm_client = genai.Client()
 
+  # Extract keywords from the search intent
+  keywords = _extract_keywords(intent)
+  keywords_str = ", ".join(keywords)
+
   # Create a numbered list of products for the LLM
   product_list = []
   for idx, product in enumerate(products):
@@ -158,37 +178,43 @@ async def _filter_relevant_products(
         "description": product.shortDescription or "",
     })
 
-  prompt = f"""You are helping filter product search results for relevance.
+  prompt = f"""Filter product search results for: "{intent}"
 
-User's search intent: "{intent}"
+Key search terms: {keywords_str}
 
 Available products:
-{'\n'.join([f"{i}. {p['name']} - ${p['price']}" for i, p in enumerate(product_list)])}
+{'\n'.join([f"{i}. {p['name']} (${p['price']})" for i, p in enumerate(product_list)])}
 
-Your task: Select ONLY the {max_results} products that are the ACTUAL MAIN ITEM the user wants to buy.
+STRICT MATCHING RULES:
+1. Product name MUST contain the main search terms from: {keywords_str}
+2. Example: "USB cables" requires BOTH "USB" AND "cable" in product name
+3. Example: "USB hard drive" has "USB" but NOT "cable" → REJECT for "USB cables" search
+4. Prioritize products where ALL keywords match
 
-CRITICAL FILTERING RULES - FOLLOW STRICTLY:
-1. ABSOLUTELY EXCLUDE: filters, refills, air filters, water filters, replacement parts, accessories
-2. ABSOLUTELY EXCLUDE: cables, cases, chargers, adapters, batteries, cleaning supplies
-3. ABSOLUTELY EXCLUDE: any product with words like "filter", "refill", "replacement", "accessory", "cable", "case", "adapter"
-4. ONLY SELECT: The main product itself (e.g., actual MacBooks, actual refrigerators, actual TVs)
-5. If user searches "refrigerator", select REFRIGERATORS not "refrigerator filters"
-6. If user searches "MacBook", select MACBOOKS not "MacBook cases"
-7. Look for the COMPLETE PRODUCT NAME that matches the search intent
+EXCLUSION RULES (unless user explicitly searches for these):
+- If user wants a DEVICE (laptop, TV, phone): EXCLUDE accessories, cables, cases, chargers, filters
+- If user wants ACCESSORIES (cables, chargers): ONLY select those, EXCLUDE devices
+- ALWAYS exclude: warranties, service plans, replacement parts, refills
 
-BAD EXAMPLES (DO NOT SELECT):
-- "PureAir Produce Keeper Refill for Select Frigidaire Refrigerators" ❌
-- "Whirlpool FreshFlow Refrigerator Air Filter" ❌
-- "INIU USB C Cable for MacBook" ❌
+EXAMPLES:
+User searches "USB cables":
+  ✓ "Anker USB-C to USB-C Cable 6ft" (has USB + cable)
+  ✗ "WD External USB 3.0 Hard Drive" (has USB but NOT cable)
+  ✗ "HDMI Cable 10ft" (has cable but NOT USB)
 
-GOOD EXAMPLES (SELECT THESE):
-- "Frigidaire 18.3 Cu. Ft. Top Freezer Refrigerator" ✓
-- "Apple MacBook Air 13-inch M2 Chip" ✓
-- "Samsung 65-inch QLED 4K TV" ✓
+User searches "MacBook":
+  ✓ "Apple MacBook Air 13-inch M2"
+  ✗ "MacBook Pro USB-C Charging Cable"
+  ✗ "MacBook Case Hard Shell"
 
-Return ONLY the indices (0-based) of the {max_results} most relevant MAIN PRODUCTS as a JSON array.
-If you cannot find {max_results} main products, return fewer indices.
-Example: [12, 14]
+User searches "refrigerator":
+  ✓ "Samsung 25 Cu. Ft. French Door Refrigerator"
+  ✗ "Refrigerator Water Filter"
+  ✗ "Refrigerator Air Filter Replacement"
+
+Return ONLY the indices (0-based) of the {max_results} BEST MATCHING products as a JSON array.
+If fewer than {max_results} match well, return fewer indices.
+Example response: [0, 5, 12]
 """
 
   try:
