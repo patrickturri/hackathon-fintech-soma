@@ -1190,30 +1190,42 @@
       visibility: hidden !important;
     }
 
-    /* Remove white border from input containers */
-    .message-input-container,
-    .chat-input-container,
-    [class*="input-container"],
-    textarea[placeholder*="Message"],
+    /* Modern textarea styling */
     textarea,
-    form,
-    .mat-mdc-form-field,
-    .mdc-text-field,
-    .mat-mdc-form-field .mat-mdc-text-field-wrapper,
-    .mdc-text-field--outlined {
-      border: none !important;
-      border-color: transparent !important;
-      outline: none !important;
+    textarea[placeholder*="Message"] {
+      border: 1px solid rgba(255, 255, 255, 0.15) !important;
+      border-radius: 12px !important;
+      background: rgba(255, 255, 255, 0.05) !important;
+      padding: 14px 18px !important;
+      transition: all 0.3s ease !important;
     }
 
-    /* Target Material Design outlined inputs specifically */
-    .mat-mdc-form-field-infix,
+    textarea:hover {
+      border-color: rgba(255, 255, 255, 0.25) !important;
+      background: rgba(255, 255, 255, 0.08) !important;
+    }
+
+    textarea:focus {
+      border-color: rgba(138, 180, 248, 0.6) !important;
+      background: rgba(255, 255, 255, 0.1) !important;
+      outline: none !important;
+      box-shadow: 0 0 0 3px rgba(138, 180, 248, 0.1) !important;
+    }
+
+    /* Modern input container styling */
+    .mat-mdc-form-field,
+    .mdc-text-field,
+    .mat-mdc-form-field .mat-mdc-text-field-wrapper {
+      border-radius: 12px !important;
+      background: rgba(255, 255, 255, 0.05) !important;
+    }
+
+    /* Override Material Design outlined borders */
     .mdc-notched-outline,
     .mdc-notched-outline__leading,
     .mdc-notched-outline__notch,
     .mdc-notched-outline__trailing {
       border: none !important;
-      border-color: transparent !important;
     }
   </style>
   <script>
