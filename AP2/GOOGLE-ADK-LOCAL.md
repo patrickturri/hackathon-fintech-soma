@@ -38,6 +38,22 @@ Simply edit files in `google-adk-local/google/adk/` - changes are live immediate
 ./switch-adk.sh official
 ```
 
+### Check which version is active
+```bash
+./switch-adk.sh status
+```
+
+## Important Note About `uv sync`
+
+⚠️ **When you run `uv sync`, it may try to reconcile dependencies and could uninstall the local version.**
+
+If this happens, simply run:
+```bash
+./switch-adk.sh local
+```
+
+This will reinstall the local editable version.
+
 ## Verify Which Version Is Active
 
 ```bash

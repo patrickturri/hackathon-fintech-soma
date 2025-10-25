@@ -11,7 +11,7 @@ dependencies = [
     "absl-py",
     "flask",
     "flask-cors",
-    "google-adk",
+    "google-adk-local",
     "google-genai",
     "httpx",
     "requests",
@@ -26,3 +26,4 @@ where = ["src"]
 
 [tool.uv.sources]
 ap2 = { workspace = true }
+google-adk-local = { workspace = true }
