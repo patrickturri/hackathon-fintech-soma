@@ -1,0 +1,80 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "google-adk-local"
+version = "1.13.0+local"
+description = "Local fork of Google Agent Development Kit (ADK)"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {file = "LICENSE"}
+authors = [
+    {name = "Google LLC", email = "googleapis-packages@google.com"},
+]
+
+dependencies = [
+    "PyYAML>=6.0.2, <7.0.0",
+    "absolufy-imports>=0.3.1, <1.0.0",
+    "anyio>=4.9.0, <5.0.0",
+    "authlib>=1.5.1, <2.0.0",
+    "click>=8.1.8, <9.0.0",
+    "fastapi>=0.115.0, <1.0.0",
+    "google-api-python-client>=2.157.0, <3.0.0",
+    "google-cloud-bigtable>=2.32.0",
+    "google-cloud-aiplatform[agent-engines]>=1.95.1, <2.0.0",
+    "google-cloud-secret-manager>=2.22.0, <3.0.0",
+    "google-cloud-spanner>=3.56.0, <4.0.0",
+    "google-cloud-speech>=2.30.0, <3.0.0",
+    "google-cloud-storage>=2.18.0, <3.0.0",
+    "google-genai>=1.21.1, <2.0.0",
+    "graphviz>=0.20.2, <1.0.0",
+    "mcp>=1.8.0, <2.0.0",
+    "opentelemetry-api>=1.31.0, <2.0.0",
+    "opentelemetry-exporter-gcp-trace>=1.9.0, <2.0.0",
+    "opentelemetry-sdk>=1.31.0, <2.0.0",
+    "pydantic>=2.0, <3.0.0",
+    "python-dateutil>=2.9.0.post0, <3.0.0",
+    "python-dotenv>=1.0.0, <2.0.0",
+    "requests>=2.32.4, <3.0.0",
+    "sqlalchemy-spanner>=1.14.0",
+    "sqlalchemy>=2.0, <3.0.0",
+    "starlette>=0.46.2, <1.0.0",
+    "tenacity>=8.0.0, <9.0.0",
+    "typing-extensions>=4.5, <5",
+    "tzlocal>=5.3, <6.0",
+    "uvicorn>=0.34.0, <1.0.0",
+    "watchdog>=6.0.0, <7.0.0",
+    "websockets>=15.0.1, <16.0.0",
+]
+
+[project.optional-dependencies]
+a2a = [
+    "a2a-sdk>=0.3.0,<0.4.0",
+]
+dev = [
+    "flit>=3.10.0",
+    "isort>=6.0.0",
+    "mypy>=1.15.0",
+    "pyink>=24.10.0",
+    "pylint>=2.6.0",
+]
+extensions = [
+    "anthropic>=0.43.0",
+    "beautifulsoup4>=3.2.2",
+    "docker>=7.0.0",
+    "langgraph>=0.2.60",
+    "litellm>=1.75.5",
+    "llama-index-readers-file>=0.4.0",
+    "lxml>=5.3.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/google/adk-python"
+Documentation = "https://google.github.io/adk-docs/"
+Repository = "https://github.com/google/adk-python"
+Changelog = "https://github.com/google/adk-python/blob/main/CHANGELOG.md"
+
+[tool.setuptools.packages.find]
+include = ["google*"]
+
