@@ -7,6 +7,9 @@
 # Exit immediately if any command exits with a non-zero status.
 set -e
 
+# Print each command as it is executed.
+set -x
+
 # The directory containing the agents.
 AGENTS_DIR="samples/python/src/roles"
 # A directory to store logs.
